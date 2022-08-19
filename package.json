@@ -4,6 +4,8 @@
   "description": "",
   "main": "index.js",
   "devDependencies": {
+    "@types/express": "^4.17.13",
+    "@types/tmp": "^0.2.3",
     "@typescript-eslint/eslint-plugin": "^5.32.0",
     "@typescript-eslint/parser": "^5.32.0",
     "eslint": "^8.20.0",
@@ -18,15 +20,19 @@
     "typescript": "^4.7.4"
   },
   "scripts": {
-    "dev": "nodemon src/index.ts"
+    "dev": "nodemon src/index.ts",
+    "srv": "nodemon src/server.ts"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "hummus-recipe": "github:easyTree/hummusRecipe#88c88e02409ec0ecf024e29bb7215bb3f319c737",
+    "express": "^4.18.1",
+    "hummus-recipe": "github:chunyenHuang/hummusRecipe#bbd6152492c2e3f4b1a69e1ad712284563fde62b",
+    "muhammara": "^3.0.0",
     "nodemon": "^2.0.19",
     "pdf-merger-js": "^4.0.0",
+    "tmp": "^0.2.1",
     "ts-node": "^10.8.2"
   }
 }
