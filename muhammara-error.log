@@ -1,0 +1,4 @@
+[ 19/08/2022 04:12:28 ] ObjectsContext::WriteXrefTable, Unexpected Failure. Object of ID = 58 was not registered as written. probably means it was not written
+[ 19/08/2022 04:12:28 ] PDFWriter::EndPDF, Could not end PDF
+[ 19/08/2022 05:29:35 ] ObjectsContext::WriteXrefTable, Unexpected Failure. Object of ID = 58 was not registered as written. probably means it was not written
+[ 19/08/2022 05:29:35 ] PDFWriter::EndPDF, Could not end PDF
