@@ -31,7 +31,6 @@
     "hummus-recipe": "github:easyTree/hummusRecipe#df0d65422ce0001f219ecd859e651d76056a691f",
     "muhammara": "^3.0.0",
     "nodemon": "^2.0.19",
-    "pdf-merger-js": "^4.0.0",
     "tmp": "^0.2.1",
     "ts-node": "^10.8.2"
   }
