@@ -51,3 +51,9 @@ export interface GenerateKitchenLabelsRequest {
 export interface TypedRequestBody<T> extends Express.Request {
     body: T
 }
+
+export interface DebugRequest {
+    json: any
+    echoBody: boolean
+    echoBodySize: boolean
+}

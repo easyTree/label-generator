@@ -5,6 +5,7 @@ import tmp from 'tmp'
 import { generateFoodLabelPdf } from './labels'
 import { mergeFiles } from './merger'
 import {
+    DebugRequest,
     GenerateKitchenLabelsRequest,
     TypedRequestBody
 } from './types'
@@ -16,6 +17,17 @@ app.use(responseTime())
 
 app.get('/info', (_req, res) => {
     res.send({ now: new Date ()})
+})
+
+app.post('/info', (req: TypedRequestBody<DebugRequest>, res) => {
+    const { body } = req
+    const { json, echoBody, echoBodySize } = body
+
+    res.send({ 
+        now: new Date (), 
+        ...(echoBodySize? { bodySize: JSON.stringify(json, null, 2).length }:{}), 
+        ...(echoBody ? { body } : {})
+    })
 })
 
 app.post(
