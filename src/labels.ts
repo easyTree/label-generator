@@ -139,7 +139,7 @@ export const generateFoodLabelPdf = async ({
             align: 'right top'
         })
 
-        y += voff
+        y += voff * 1.2
 
         text({
             text: `${firstName} ${lastName}`,
@@ -149,7 +149,7 @@ export const generateFoodLabelPdf = async ({
             bold: true
         })
 
-        y += voff
+        y += voff * 0.8
 
         text({
             text: description,
@@ -166,7 +166,7 @@ export const generateFoodLabelPdf = async ({
             }
         })
 
-        y += voff * 1.5
+        y += voff * 1.7
         text({
             text: 'Allergen Info',
             x: left,
@@ -176,7 +176,7 @@ export const generateFoodLabelPdf = async ({
             bold: true
         })
 
-        y += voff
+        y += voff * 0.8
         text({
             text: allergenInfo,
             x: left,
