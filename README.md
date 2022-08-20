@@ -101,7 +101,7 @@ similar to debug.pageEdge - shows a (red in the image) hilight which should sit 
 
 ## Extensibility
 
-With minor modifications is should be possible to allow `LabelSpecSheeet`s to be registered which may then be referenced when registering:
+With minor modifications is should be possible to allow `LabelSpecSheet`s to be registered which may then be referenced when registering:
 
 ```
 [
