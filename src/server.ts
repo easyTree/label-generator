@@ -2,7 +2,7 @@ import express, { Response } from 'express'
 import path from 'path'
 import tmp from 'tmp'
 import { generateFoodLabelPdf } from './labels'
-import { mergeFiles2 } from './merger2'
+import { mergeFiles } from './merger'
 import { DebugFlags, LabelInfo } from './types'
 import { deleteTmpFile } from './utils'
 
@@ -101,7 +101,7 @@ app.post(
                 'label-template.pdf'
             )
 
-            const mergedFile = await mergeFiles2({
+            const mergedFile = await mergeFiles({
                 baseFile: templatePath,
                 overlayFile: outputFilePath
             })

@@ -1,7 +1,7 @@
 import HummusRecipe from 'hummus-recipe'
 import tmp from 'tmp'
 
-export const mergeFiles2 = async ({
+export const mergeFiles = async ({
     baseFile,
     overlayFile
 }: {
