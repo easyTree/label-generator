@@ -57,7 +57,8 @@ export const generateFoodLabelPdf = async ({
         mmx2: number,
         mmy2: number,
         stroke: string,
-        lw: number
+        lw: number,
+        opacity = 1
     ) => {
         const hlw = lw / 2
         const s = {
@@ -76,7 +77,8 @@ export const generateFoodLabelPdf = async ({
         ]
         pdfDoc.polygon(coords, {
             stroke,
-            lineWidth: lw
+            lineWidth: lw,
+            opacity
         })
     }
 
@@ -90,7 +92,7 @@ export const generateFoodLabelPdf = async ({
         const bottom = mmy + spec.label.height_mm - cr
 
         if (debug?.labelBoxes) {
-            box(mmx + cr, mmy + cr, right, bottom, 'red', 2)
+            box(mmx + cr, mmy + cr, right, bottom, '#ff0000', 2, 0.2)
         }
 
         const text = ({
@@ -166,7 +168,13 @@ export const generateFoodLabelPdf = async ({
             align: 'left top',
             textBox: {
                 ...(debug?.wrapBoxes
-                    ? { style: { stroke: 'red', lineWidth: 2 } }
+                    ? {
+                          style: {
+                              stroke: '#00ffff',
+                              lineWidth: 2,
+                              opacity: 0.2
+                          }
+                      }
                     : {}),
                 width: (spec.label.width_mm - pad * 4) * scale.x,
                 height: 22
@@ -223,7 +231,8 @@ export const generateFoodLabelPdf = async ({
                 mm.margins.left + mmInner.width,
                 mm.margins.top + mmInner.height,
                 'green',
-                1
+                1,
+                0.2
             )
         }
     }

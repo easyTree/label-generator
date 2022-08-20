@@ -13,7 +13,7 @@ const app = express()
 app.use(express.json())
 
 app.post(
-    '/generate-kitchen-labels',
+    '/generate-labels',
     async (
         req: TypedRequestBody<GenerateKitchenLabelsRequest>,
         res: Response
