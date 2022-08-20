@@ -29,8 +29,6 @@ export const generateFoodLabelPdf = async ({
 
     const { pageNumber, width, height, rotate } = pdfDoc.pageInfo(1)
 
-    // spec.paper.margins
-
     const mm = {
         width: spec.paper.width_mm,
         height: spec.paper.height_mm,
@@ -41,7 +39,6 @@ export const generateFoodLabelPdf = async ({
         x: doc.width / mm.width,
         y: doc.height / mm.height
     }
-    console.log(`🚀🚀🚀 scale: ${JSON.stringify(scale, null, 2)}`)
     const mmInner = {
         width: mm.width - mm.margins.left - mm.margins.right,
         height: mm.height - mm.margins.top - mm.margins.bottom
@@ -71,9 +68,7 @@ export const generateFoodLabelPdf = async ({
             [s.x1 + hlw, s.y1 + hlw]
         ]
         pdfDoc.polygon(coords, {
-            // color: 'red',
             stroke,
-            // fill: 'blue',
             lineWidth: lw
         })
     }
@@ -91,18 +86,29 @@ export const generateFoodLabelPdf = async ({
             box(mmx + cr, mmy + cr, right, bottom, 'red', 2)
         }
 
-        const text = (
-            text: string,
-            x: number,
-            y: number,
+        const text = ({
+            text,
+            x,
+            y,
             size = 12,
             align = 'left top',
-            textBox: TextBox = {}
-        ) => {
+            textBox = {},
+            bold = false
+        }: {
+            text: string
+            x: number
+            y: number
+            size?: number
+            align?: string
+            textBox?: TextBox
+            bold?: boolean
+        }) => {
             pdfDoc.text(text, scale.x * x, scale.y * y, {
-                color: '#333333',
+                color: bold ? '#ffffff' : '#333333',
                 size,
-                // bold: true,
+                ...(bold
+                    ? { hilite: { color: '#333333', opacity: 0.8 } }
+                    : {}),
                 font: 'Helvetica',
                 align: align,
                 textBox
@@ -124,28 +130,60 @@ export const generateFoodLabelPdf = async ({
         const top = mmy + cr + pad
         let y = top
 
-        text(`Class: ${className}`, left, y)
-        text(date, right - pad, y, 10, 'right top')
+        text({ text: `Class: ${className}`, x: left, y })
+        text({
+            text: date,
+            x: right - pad,
+            y,
+            size: 10,
+            align: 'right top'
+        })
 
         y += voff
 
-        text(`${firstName} ${lastName}`, left, y, 10)
+        text({
+            text: `${firstName} ${lastName}`,
+            x: left,
+            y,
+            size: 10,
+            bold: true
+        })
 
         y += voff
 
-        text(description, left, y, 10, 'left top', {
-            ...(debug?.wrapBoxes
-                ? { style: { stroke: 'red', lineWidth: 2 } }
-                : {}),
-            width: (spec.label.width_mm - pad * 4) * scale.x,
-            height: 22
+        text({
+            text: description,
+            x: left,
+            y,
+            size: 10,
+            align: 'left top',
+            textBox: {
+                ...(debug?.wrapBoxes
+                    ? { style: { stroke: 'red', lineWidth: 2 } }
+                    : {}),
+                width: (spec.label.width_mm - pad * 4) * scale.x,
+                height: 22
+            }
         })
 
         y += voff * 1.5
-        text('Allergen Info', left, y, 10, 'left top')
+        text({
+            text: 'Allergen Info',
+            x: left,
+            y,
+            size: 10,
+            align: 'left top',
+            bold: true
+        })
 
         y += voff
-        text(allergenInfo, left, y, 10, 'left top')
+        text({
+            text: allergenInfo,
+            x: left,
+            y,
+            size: 10,
+            align: 'left top'
+        })
     }
     let i = 0
     for (
