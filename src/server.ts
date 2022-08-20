@@ -1,4 +1,5 @@
 import express, { Response } from 'express'
+import responseTime from 'response-time'
 import path from 'path'
 import tmp from 'tmp'
 import { generateFoodLabelPdf } from './labels'
@@ -11,6 +12,11 @@ import { deleteTmpFile } from './utils'
 
 const app = express()
 app.use(express.json())
+app.use(responseTime())
+
+app.get('/info', (_req, res) => {
+    res.send({ now: new Date ()})
+})
 
 app.post(
     '/generate-labels',
