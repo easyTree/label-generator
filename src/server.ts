@@ -3,20 +3,14 @@ import path from 'path'
 import tmp from 'tmp'
 import { generateFoodLabelPdf } from './labels'
 import { mergeFiles } from './merger'
-import { DebugFlags, LabelInfo } from './types'
+import {
+    GenerateKitchenLabelsRequest,
+    TypedRequestBody
+} from './types'
 import { deleteTmpFile } from './utils'
 
 const app = express()
 app.use(express.json())
-
-interface GenerateKitchenLabelsRequest {
-    debug?: DebugFlags
-    labelInfos: LabelInfo[]
-}
-
-export interface TypedRequestBody<T> extends Express.Request {
-    body: T
-}
 
 app.post(
     '/generate-kitchen-labels',
@@ -25,8 +19,6 @@ app.post(
         res: Response
     ) => {
         const { body } = req
-
-        console.log('body: ', body)
 
         const outputFile = tmp.fileSync({ postfix: '.pdf' })
         const outputFilePath = outputFile.name
@@ -112,13 +104,10 @@ app.post(
             }
         }
 
-        console.log(`sendFilePath: ${sendFilePath}`)
-
         const downloadFilename = `Kitchen_labels_for_class_${className.replace(
             /[ ]/g,
             '_'
         )}_on_${date.replace(/[ ]/g, '_').replace(/[/]/g, '.')}.pdf`
-        console.log(`downloadFilename: '${downloadFilename}'`)
 
         let cleanup1 = () => {
             console.log('*********** cleanup1!')
@@ -127,11 +116,11 @@ app.post(
 
         res.download(sendFilePath, downloadFilename, (err: any) => {
             if (err) {
-                console.log(`Error: ${err}`)
+                console.log(`❌ Error: ${err}`)
             } else {
             }
             res.end()
-            // cleanup1()  // <-- something is preventing deletion
+            // cleanup1() // <-- something is preventing deletion
             cleanup2()
         })
     }

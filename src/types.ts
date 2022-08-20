@@ -42,3 +42,12 @@ export interface DebugFlags {
     pageEdge: true
     wrapBoxes: true
 }
+
+export interface GenerateKitchenLabelsRequest {
+    debug?: DebugFlags
+    labelInfos: LabelInfo[]
+}
+
+export interface TypedRequestBody<T> extends Express.Request {
+    body: T
+}

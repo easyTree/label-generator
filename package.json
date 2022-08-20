@@ -28,7 +28,7 @@
   "license": "ISC",
   "dependencies": {
     "express": "^4.18.1",
-    "hummus-recipe": "github:easyTree/hummusRecipe#bbd6152492c2e3f4b1a69e1ad712284563fde62b",
+    "hummus-recipe": "github:easyTree/hummusRecipe#df0d65422ce0001f219ecd859e651d76056a691f",
     "muhammara": "^3.0.0",
     "nodemon": "^2.0.19",
     "pdf-merger-js": "^4.0.0",

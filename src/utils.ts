@@ -2,7 +2,9 @@ import { existsSync } from 'fs'
 import tmp from 'tmp'
 
 export const deleteTmpFile = (file: tmp.FileResult) => {
-    console.log(`❌a: '${file.name}' exists ${existsSync(file.name)}`)
+    const existsBefore = existsSync(file.name)
+
+    console.log(`❌a: '${file.name}' exists ${existsBefore}`)
 
     file.removeCallback()
 

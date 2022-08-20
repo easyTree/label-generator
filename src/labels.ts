@@ -22,12 +22,19 @@ export const generateFoodLabelPdf = async ({
 }) => {
     const pdfDoc = new HummusRecipe('new', outputFilePath, {
         version: 1.6,
-        author: 'John Doe',
-        title: 'Hummus Recipe',
-        subject: 'A brand new PDF'
-    }).createPage('a4')
+        ...pdfMetaData
+    })
+
+    const addPage = () => pdfDoc.createPage('a4')
+
+    addPage()
 
     const { pageNumber, width, height, rotate } = pdfDoc.pageInfo(1)
+
+    const labelsPerPage =
+        spec.label.horizontalCount * spec.label.verticalCount
+    const pagesNeeded = Math.ceil(labelInfo.length / labelsPerPage)
+    const lastPageLabelCount = labelInfo.length % labelsPerPage
 
     const mm = {
         width: spec.paper.width_mm,
@@ -185,33 +192,52 @@ export const generateFoodLabelPdf = async ({
             align: 'left top'
         })
     }
-    let i = 0
-    for (
-        let x = 0, mmx = mm.margins.left;
-        x < spec.label.horizontalCount;
-        x++, mmx += spec.label.width_mm + spec.label.horizontalGap_mm
-    ) {
+
+    const generateLabelsForPage = (page: number, count: number) => {
+        let i = (page - 1) * labelsPerPage
+        let j = 0
         for (
-            let y = 0, mmy = mm.margins.top;
-            y < spec.label.verticalCount;
-            y++,
-                mmy +=
-                    spec.label.height_mm + spec.label.verticalGap_mm
+            let x = 0, mmx = mm.margins.left;
+            x < spec.label.horizontalCount && j < count;
+            x++,
+                mmx +=
+                    spec.label.width_mm + spec.label.horizontalGap_mm
         ) {
-            labelBox(mmx, mmy, labelInfo[i++])
+            for (
+                let y = 0, mmy = mm.margins.top;
+                y < spec.label.verticalCount && j < count;
+                j++,
+                    y++,
+                    mmy +=
+                        spec.label.height_mm +
+                        spec.label.verticalGap_mm
+            ) {
+                labelBox(mmx, mmy, labelInfo[i++])
+            }
+        }
+
+        if (debug?.pageEdge) {
+            box(
+                mm.margins.left,
+                mm.margins.top,
+                mm.margins.left + mmInner.width,
+                mm.margins.top + mmInner.height,
+                'green',
+                1
+            )
         }
     }
 
-    if (debug?.pageEdge) {
-        box(
-            mm.margins.left,
-            mm.margins.top,
-            mm.margins.left + mmInner.width,
-            mm.margins.top + mmInner.height,
-            'green',
-            1
+    for (let page = 1; page <= pagesNeeded; page++) {
+        if (page > 1) {
+            addPage() // first page created earlier to get page dimensions
+        }
+        generateLabelsForPage(
+            page,
+            page < pagesNeeded ? labelsPerPage : lastPageLabelCount
         )
+        pdfDoc.endPage()
     }
 
-    pdfDoc.endPage().endPDF()
+    pdfDoc.endPDF()
 }

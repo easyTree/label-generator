@@ -8,24 +8,47 @@ export const mergeFiles = async ({
     baseFile: string
     overlayFile: string
 }) => {
-    console.log(`mergeFiles2 (
-        baseFile: '${baseFile}',
-        overlayFile: '${overlayFile}'
-    )`)
-
     const outputFile = tmp.fileSync({ postfix: '.pdf' })
+
     const outputFilePath = outputFile.name
-    console.log(`outputFilePath: '${outputFilePath}'`)
 
-    new HummusRecipe(baseFile, outputFilePath, {
-        version: 1.6
-    })
-        .editPage(1)
-        .overlay(overlayFile, 0, 0)
-        .endPage()
-        .endPDF((blah: any) => {
-            console.log(`blah: ${JSON.stringify(blah, null, 2)}`)
-        })
+    const overlayDoc = new HummusRecipe(overlayFile)
+    const pageCount = overlayDoc.getPageCount()
 
+    let multiPageBaseFile: tmp.FileResult | null = null
+    if (pageCount > 1) {
+        multiPageBaseFile = tmp.fileSync({ postfix: '.pdf' })
+        const multiPageBaseDoc = new HummusRecipe(
+            'new',
+            multiPageBaseFile.name,
+            { version: 1.6 }
+        )
+        for (let i = 1; i <= pageCount; i++) {
+            multiPageBaseDoc.appendPage(baseFile, 1)
+        }
+        multiPageBaseDoc.endPDF()
+    }
+
+    const doc = new HummusRecipe(
+        multiPageBaseFile !== null
+            ? multiPageBaseFile.name
+            : baseFile,
+        outputFilePath,
+        {
+            version: 1.6
+        }
+    )
+
+    for (let i = 1; i <= pageCount; i++) {
+        doc.editPage(i)
+            .overlay(overlayFile, 0, 0, { page: i })
+            .endPage()
+    }
+
+    doc.endPDF()
+
+    if (multiPageBaseFile !== null) {
+        // deleteTmpFile(multiPageBaseFile)
+    }
     return outputFile
 }
