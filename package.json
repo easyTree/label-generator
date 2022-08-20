@@ -21,6 +21,10 @@
     "dev": "nodemon ./src/server.ts",
     "prod": "ts-node --transpile-only ./src/server.ts"
   },
+  "engines": {
+    "npm": ">=8.15.0",
+    "node": ">=16.17.0"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
