@@ -121,3 +121,5 @@ A layout algorithm is a small function which receives:
 -   the dimensions of the label
 -   drawing functions, e.g. box, text
 -   a `LabelInfo` with the information to be displayed
+
+All units are in mm to allow easy label-creation
