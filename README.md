@@ -117,7 +117,7 @@ and allow easy extension.
 
 A layout algorithm is a small function which receives:
 
--   coordinates for the top-level of the label to be rendered
+-   coordinates for the top-left of the label to be rendered
 -   the dimensions of the label
 -   drawing functions, e.g. box, text
 -   a `LabelInfo` with the information to be displayed
