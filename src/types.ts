@@ -48,6 +48,8 @@ export interface GenerateKitchenLabelsRequest {
     labelInfos: LabelInfo[]
 }
 
+export interface OverlayPdfOntoLabelsRequest {}
+
 export interface TypedRequestBody<T> extends Express.Request {
     body: T
 }

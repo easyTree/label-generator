@@ -18,7 +18,10 @@
     "prettier-plugin-organize-imports": "^2.3.4"
   },
   "scripts": {
-    "dev": "nodemon ./src/server.ts",
+    "devprev": "nodemon ./src/server.ts",
+    "clean": "rmdir ./build",
+    "build": "npm run clean && tsc",
+    "dev": "npm run build && skaffold dev --port-forward",
     "prod": "ts-node --transpile-only ./src/server.ts"
   },
   "engines": {

@@ -1,12 +1,13 @@
 import express, { Response } from 'express'
-import responseTime from 'response-time'
 import path from 'path'
+import responseTime from 'response-time'
 import tmp from 'tmp'
 import { generateFoodLabelPdf } from './labels'
 import { mergeFiles } from './merger'
 import {
     DebugRequest,
     GenerateKitchenLabelsRequest,
+    OverlayPdfOntoLabelsRequest,
     TypedRequestBody
 } from './types'
 import { deleteTmpFile } from './utils'
@@ -16,19 +17,62 @@ app.use(express.json())
 app.use(responseTime())
 
 app.get('/info', (_req, res) => {
-    res.send({ now: new Date ()})
+    res.send({ now: new Date() })
 })
 
 app.post('/info', (req: TypedRequestBody<DebugRequest>, res) => {
     const { body } = req
     const { json, echoBody, echoBodySize } = body
 
-    res.send({ 
-        now: new Date (), 
-        ...(echoBodySize? { bodySize: JSON.stringify(json, null, 2).length }:{}), 
+    res.send({
+        now: new Date(),
+        ...(echoBodySize
+            ? { bodySize: JSON.stringify(json, null, 2).length }
+            : {}),
         ...(echoBody ? { body } : {})
     })
 })
+
+app.post(
+    '/overlay-pdf-onto-labels',
+    async (
+        req: TypedRequestBody<OverlayPdfOntoLabelsRequest>,
+        res
+    ) => {
+        const outputFile = tmp.fileSync({ postfix: '.pdf' })
+        const outputFilePath = outputFile.name
+
+        const base = path.resolve('./files/merge')
+        const inputFolder = path.join(base, 'input1')
+        const templatePath = path.resolve(
+            inputFolder,
+            'label-template.pdf'
+        )
+        const mergedFile = await mergeFiles({
+            baseFile: templatePath,
+            overlayFile: outputFilePath
+        })
+        const cleanup = () => {
+            console.log('*********** cleanup!')
+            deleteTmpFile(mergedFile)
+        }
+        const downloadFilename = `merged-file.pdf`
+
+        res.download(
+            mergedFile.name,
+            downloadFilename,
+            (err: any) => {
+                if (err) {
+                    console.log(`❌ Error: ${err}`)
+                } else {
+                }
+                res.end()
+                // cleanup1() // <-- something is preventing deletion
+                cleanup()
+            }
+        )
+    }
+)
 
 app.post(
     '/generate-labels',

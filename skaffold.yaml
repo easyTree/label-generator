@@ -1,0 +1,23 @@
+apiVersion: skaffold/v2beta28
+kind: Config
+deploy:
+    kubectl:
+        manifests:
+            - ./infra/k8s/*
+build:
+    tagPolicy:
+        dateTime:
+            format: "2006-01-02_15-04-05.999_MST"
+            timezone: "Local"
+    local:
+        push: false
+        useBuildkit: false
+    artifacts:
+        - image: perroh/label-generator
+          context: .
+          docker:
+              dockerfile: Dockerfile
+          sync:
+              manual:
+                  - src: "src/**/*.ts"
+                    dest: .
