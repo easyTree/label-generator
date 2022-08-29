@@ -10,3 +10,5 @@ export const deleteTmpFile = (file: tmp.FileResult) => {
 
     console.log(`❌b: '${file.name}' exists ${existsSync(file.name)}`)
 }
+
+export const json = (ob: any) => JSON.stringify(ob, null, 2)

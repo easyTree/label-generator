@@ -13,8 +13,16 @@ build:
         push: false
         useBuildkit: false
     artifacts:
+        - image: perroh/root
+          context: .
+          docker:
+              dockerfile: RootDockerfile
+
         - image: perroh/label-generator
           context: .
+          requires:
+              - image: perroh/root
+                alias: ROOT
           docker:
               dockerfile: Dockerfile
           sync:

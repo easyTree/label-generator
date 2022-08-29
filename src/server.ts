@@ -1,4 +1,5 @@
 import express, { Response } from 'express'
+import { existsSync, writeFileSync } from 'fs'
 import path from 'path'
 import responseTime from 'response-time'
 import tmp from 'tmp'
@@ -10,11 +11,28 @@ import {
     OverlayPdfOntoLabelsRequest,
     TypedRequestBody
 } from './types'
-import { deleteTmpFile } from './utils'
+import { deleteTmpFile, json } from './utils'
+
+import cors from 'cors'
 
 const app = express()
-app.use(express.json())
+
+const whitelist = ['http://localhost:3000']
+const corsInstance = cors({
+    origin: (origin, callback) => {
+        console.log(`origin: '${origin}'`)
+        if (!origin || whitelist.indexOf(origin) !== -1) {
+            callback(null, true)
+        } else {
+            callback(new Error('Not allowed by CORS'))
+        }
+    },
+    optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
+})
+app.options('*', corsInstance)
+app.use(corsInstance)
 app.use(responseTime())
+app.use(express.json())
 
 app.get('/info', (_req, res) => {
     res.send({ now: new Date() })
@@ -36,7 +54,9 @@ app.post('/info', (req: TypedRequestBody<DebugRequest>, res) => {
 app.post(
     '/overlay-pdf-onto-labels',
     async (
-        req: TypedRequestBody<OverlayPdfOntoLabelsRequest>,
+        {
+            body: { pdf }
+        }: TypedRequestBody<OverlayPdfOntoLabelsRequest>,
         res
     ) => {
         const outputFile = tmp.fileSync({ postfix: '.pdf' })
@@ -48,6 +68,14 @@ app.post(
             inputFolder,
             'label-template.pdf'
         )
+        const buff = Buffer.from(pdf, 'base64')
+
+        console.log(`🍕 base-64 encoded pdf: '${pdf}'`)
+        writeFileSync(outputFilePath, buff)
+        console.log(
+            `🍕 wrote base64-decoded pdf to outputFile: '${outputFilePath}'`
+        )
+
         const mergedFile = await mergeFiles({
             baseFile: templatePath,
             overlayFile: outputFilePath
@@ -80,111 +108,127 @@ app.post(
         req: TypedRequestBody<GenerateKitchenLabelsRequest>,
         res: Response
     ) => {
-        const { body } = req
+        try {
+            const { body } = req
 
-        const outputFile = tmp.fileSync({ postfix: '.pdf' })
-        const outputFilePath = outputFile.name
+            const outputFile = tmp.fileSync({ postfix: '.pdf' })
+            const outputFilePath = outputFile.name
 
-        const { className, date } = body.labelInfos[0]
-        const { debug } = body
+            const { className, date } = body.labelInfos[0]
+            const { debug } = body
 
-        await generateFoodLabelPdf({
-            labelInfo: body.labelInfos,
-            spec: {
-                // measured:
-                paper: {
-                    width_mm: 210,
-                    height_mm: 297,
-                    margins_mm: {
-                        top: 13.08,
-                        right: 6.36,
-                        bottom: 12.38,
-                        left: 7.07
+            await generateFoodLabelPdf({
+                labelInfo: body.labelInfos,
+                spec: {
+                    // measured:
+                    paper: {
+                        width_mm: 210,
+                        height_mm: 297,
+                        margins_mm: {
+                            top: 13.08,
+                            right: 6.36,
+                            bottom: 12.38,
+                            left: 7.07
+                        }
+                    },
+                    label: {
+                        width_mm: 64.4,
+                        height_mm: 33.9,
+                        horizontalCount: 3,
+                        verticalCount: 8,
+                        cornerRadius_mm: 1.41,
+                        horizontalGap_mm: 1.77,
+                        verticalGap_mm: 0
                     }
+
+                    // specified:
+                    // paper: {
+                    //     width_mm: 210,
+                    //     height_mm: 297,
+                    //     margins_mm: {
+                    //         top: 12.9,
+                    //         right: 7,
+                    //         bottom: 12.9,
+                    //         left: 7
+                    //     }
+                    // },
+                    // label: {
+                    //     width_mm: 63,
+                    //     height_mm: 33.9,
+                    //     horizontalCount: 3,
+                    //     verticalCount: 8,
+                    //     cornerRadius_mm: 1.5,
+                    //     horizontalGap_mm: 2,
+                    //     verticalGap_mm: 0
+                    // }
                 },
-                label: {
-                    width_mm: 64.4,
-                    height_mm: 33.9,
-                    horizontalCount: 3,
-                    verticalCount: 8,
-                    cornerRadius_mm: 1.41,
-                    horizontalGap_mm: 1.77,
-                    verticalGap_mm: 0
-                }
-
-                // specified:
-                // paper: {
-                //     width_mm: 210,
-                //     height_mm: 297,
-                //     margins_mm: {
-                //         top: 12.9,
-                //         right: 7,
-                //         bottom: 12.9,
-                //         left: 7
-                //     }
-                // },
-                // label: {
-                //     width_mm: 63,
-                //     height_mm: 33.9,
-                //     horizontalCount: 3,
-                //     verticalCount: 8,
-                //     cornerRadius_mm: 1.5,
-                //     horizontalGap_mm: 2,
-                //     verticalGap_mm: 0
-                // }
-            },
-            pdfMetaData: {
-                author: 'Lee',
-                subject: 'kitchen labels',
-                title: `Kitchen labels for class '${className}'`
-            },
-            outputFilePath,
-            debug
-        })
-
-        let sendFilePath = outputFilePath
-        let cleanup2 = () => {
-            console.log('*********** blank cleanup2!')
-        }
-
-        if (debug?.labels) {
-            const base = path.resolve('./files/merge')
-            const inputFolder = path.join(base, 'input1')
-            const templatePath = path.resolve(
-                inputFolder,
-                'label-template.pdf'
-            )
-
-            const mergedFile = await mergeFiles({
-                baseFile: templatePath,
-                overlayFile: outputFilePath
+                pdfMetaData: {
+                    author: 'Lee',
+                    subject: 'kitchen labels',
+                    title: `Kitchen labels for class '${className}'`
+                },
+                outputFilePath,
+                debug
             })
-            sendFilePath = mergedFile.name
-            cleanup2 = () => {
-                console.log('*********** cleanup2!')
-                deleteTmpFile(mergedFile)
+
+            let sendFilePath = outputFilePath
+            let cleanup2 = () => {
+                console.log('*********** blank cleanup2!')
             }
-        }
 
-        const downloadFilename = `Kitchen_labels_for_class_${className.replace(
-            /[ ]/g,
-            '_'
-        )}_on_${date.replace(/[ ]/g, '_').replace(/[/]/g, '.')}.pdf`
+            if (debug?.labels) {
+                const base = path.resolve('./files/merge')
+                const inputFolder = path.join(base, 'input1')
+                const templatePath = path.resolve(
+                    inputFolder,
+                    'label-template.pdf'
+                )
 
-        let cleanup1 = () => {
-            console.log('*********** cleanup1!')
-            deleteTmpFile(outputFile)
-        }
+                console.log(
+                    `Does file '${templatePath}' exist? : ${existsSync(
+                        templatePath
+                    )}`
+                )
 
-        res.download(sendFilePath, downloadFilename, (err: any) => {
-            if (err) {
-                console.log(`❌ Error: ${err}`)
-            } else {
+                const mergedFile = await mergeFiles({
+                    baseFile: templatePath,
+                    overlayFile: outputFilePath
+                })
+                sendFilePath = mergedFile.name
+                cleanup2 = () => {
+                    console.log('*********** cleanup2!')
+                    deleteTmpFile(mergedFile)
+                }
             }
-            res.end()
-            // cleanup1() // <-- something is preventing deletion
-            cleanup2()
-        })
+
+            const downloadFilename = `Kitchen_labels_for_class_${className.replace(
+                /[ ]/g,
+                '_'
+            )}_on_${date
+                .replace(/[ ]/g, '_')
+                .replace(/[/]/g, '.')}.pdf`
+
+            let cleanup1 = () => {
+                console.log('*********** cleanup1!')
+                deleteTmpFile(outputFile)
+            }
+
+            res.download(
+                sendFilePath,
+                downloadFilename,
+                (err: any) => {
+                    if (err) {
+                        console.log(`❌ Error: ${err}`)
+                    } else {
+                    }
+                    res.end()
+                    // cleanup1() // <-- something is preventing deletion
+                    cleanup2()
+                }
+            )
+        } catch (error) {
+            console.log(`❌ error: ${json(error)}`)
+        }
     }
 )
 
