@@ -70,7 +70,6 @@ app.post(
         )
         const buff = Buffer.from(pdf, 'base64')
 
-        console.log(`🍕 base-64 encoded pdf: '${pdf}'`)
         writeFileSync(outputFilePath, buff)
         console.log(
             `🍕 wrote base64-decoded pdf to outputFile: '${outputFilePath}'`
@@ -80,9 +79,17 @@ app.post(
             baseFile: templatePath,
             overlayFile: outputFilePath
         })
-        const cleanup = () => {
-            console.log('*********** cleanup!')
+        const cleanupMergedFile = () => {
+            console.log(
+                '*********** /overlay-pdf-onto-labels - cleanup mergedFile!'
+            )
             deleteTmpFile(mergedFile)
+        }
+        const cleanupOutputFile = () => {
+            console.log(
+                '*********** /overlay-pdf-onto-labels - cleanup outputFile!'
+            )
+            deleteTmpFile(outputFile)
         }
         const downloadFilename = `merged-file.pdf`
 
@@ -95,8 +102,8 @@ app.post(
                 } else {
                 }
                 res.end()
-                // cleanup1() // <-- something is preventing deletion
-                cleanup()
+                cleanupOutputFile() // <-- something is preventing deletion
+                cleanupMergedFile()
             }
         )
     }
@@ -172,8 +179,10 @@ app.post(
             })
 
             let sendFilePath = outputFilePath
-            let cleanup2 = () => {
-                console.log('*********** blank cleanup2!')
+            let cleanupMergedFile = () => {
+                console.log(
+                    '*********** /generate-labels - blank cleanup2!'
+                )
             }
 
             if (debug?.labels) {
@@ -195,8 +204,10 @@ app.post(
                     overlayFile: outputFilePath
                 })
                 sendFilePath = mergedFile.name
-                cleanup2 = () => {
-                    console.log('*********** cleanup2!')
+                cleanupMergedFile = () => {
+                    console.log(
+                        '*********** /generate-labels - cleanup mergedFile!'
+                    )
                     deleteTmpFile(mergedFile)
                 }
             }
@@ -208,8 +219,10 @@ app.post(
                 .replace(/[ ]/g, '_')
                 .replace(/[/]/g, '.')}.pdf`
 
-            let cleanup1 = () => {
-                console.log('*********** cleanup1!')
+            const cleanupOutputFile = () => {
+                console.log(
+                    '*********** /generate-labels - cleanup outputFile!'
+                )
                 deleteTmpFile(outputFile)
             }
 
@@ -222,8 +235,8 @@ app.post(
                     } else {
                     }
                     res.end()
-                    // cleanup1() // <-- something is preventing deletion
-                    cleanup2()
+                    cleanupOutputFile() // <-- something is preventing deletion
+                    cleanupMergedFile()
                 }
             )
         } catch (error) {
