@@ -39,6 +39,7 @@ app.get('/info', (_req, res) => {
         res.send({ now: new Date() })
     } catch (error) {
         console.log(`❌ error: ${json(error)}`)
+        res.status(400).send({ message: 'A problem occurred.' })
     }
 })
 
@@ -56,6 +57,7 @@ app.post('/info', (req: TypedRequestBody<DebugRequest>, res) => {
         })
     } catch (error) {
         console.log(`❌ error: ${json(error)}`)
+        res.status(400).send({ message: 'A problem occurred.' })
     }
 })
 
@@ -117,6 +119,7 @@ app.post(
             )
         } catch (error) {
             console.log(`❌ error: ${json(error)}`)
+            res.status(400).send({ message: 'A problem occurred.' })
         }
     }
 )
@@ -253,6 +256,7 @@ app.post(
             )
         } catch (error) {
             console.log(`❌ error: ${json(error)}`)
+            res.status(400).send({ message: 'A problem occurred.' })
         }
     }
 )
