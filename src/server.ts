@@ -35,20 +35,28 @@ app.use(responseTime())
 app.use(express.json())
 
 app.get('/info', (_req, res) => {
-    res.send({ now: new Date() })
+    try {
+        res.send({ now: new Date() })
+    } catch (error) {
+        console.log(`❌ error: ${json(error)}`)
+    }
 })
 
 app.post('/info', (req: TypedRequestBody<DebugRequest>, res) => {
-    const { body } = req
-    const { json, echoBody, echoBodySize } = body
+    try {
+        const { body } = req
+        const { json, echoBody, echoBodySize } = body
 
-    res.send({
-        now: new Date(),
-        ...(echoBodySize
-            ? { bodySize: JSON.stringify(json, null, 2).length }
-            : {}),
-        ...(echoBody ? { body } : {})
-    })
+        res.send({
+            now: new Date(),
+            ...(echoBodySize
+                ? { bodySize: JSON.stringify(json, null, 2).length }
+                : {}),
+            ...(echoBody ? { body } : {})
+        })
+    } catch (error) {
+        console.log(`❌ error: ${json(error)}`)
+    }
 })
 
 app.post(
@@ -59,53 +67,57 @@ app.post(
         }: TypedRequestBody<OverlayPdfOntoLabelsRequest>,
         res
     ) => {
-        const outputFile = tmp.fileSync({ postfix: '.pdf' })
-        const outputFilePath = outputFile.name
+        try {
+            const outputFile = tmp.fileSync({ postfix: '.pdf' })
+            const outputFilePath = outputFile.name
 
-        const base = path.resolve('./files/merge')
-        const inputFolder = path.join(base, 'input1')
-        const templatePath = path.resolve(
-            inputFolder,
-            'label-template.pdf'
-        )
-        const buff = Buffer.from(pdf, 'base64')
-
-        writeFileSync(outputFilePath, buff)
-        console.log(
-            `🍕 wrote base64-decoded pdf to outputFile: '${outputFilePath}'`
-        )
-
-        const mergedFile = await mergeFiles({
-            baseFile: templatePath,
-            overlayFile: outputFilePath
-        })
-        const cleanupMergedFile = () => {
-            console.log(
-                '*********** /overlay-pdf-onto-labels - cleanup mergedFile!'
+            const base = path.resolve('./files/merge')
+            const inputFolder = path.join(base, 'input1')
+            const templatePath = path.resolve(
+                inputFolder,
+                'label-template.pdf'
             )
-            deleteTmpFile(mergedFile)
-        }
-        const cleanupOutputFile = () => {
-            console.log(
-                '*********** /overlay-pdf-onto-labels - cleanup outputFile!'
-            )
-            deleteTmpFile(outputFile)
-        }
-        const downloadFilename = `merged-file.pdf`
+            const buff = Buffer.from(pdf, 'base64')
 
-        res.download(
-            mergedFile.name,
-            downloadFilename,
-            (err: any) => {
-                if (err) {
-                    console.log(`❌ Error: ${err}`)
-                } else {
-                }
-                res.end()
-                cleanupOutputFile() // <-- something is preventing deletion
-                cleanupMergedFile()
+            writeFileSync(outputFilePath, buff)
+            console.log(
+                `🍕 wrote base64-decoded pdf to outputFile: '${outputFilePath}'`
+            )
+
+            const mergedFile = await mergeFiles({
+                baseFile: templatePath,
+                overlayFile: outputFilePath
+            })
+            const cleanupMergedFile = () => {
+                console.log(
+                    '*********** /overlay-pdf-onto-labels - cleanup mergedFile!'
+                )
+                deleteTmpFile(mergedFile)
             }
-        )
+            const cleanupOutputFile = () => {
+                console.log(
+                    '*********** /overlay-pdf-onto-labels - cleanup outputFile!'
+                )
+                deleteTmpFile(outputFile)
+            }
+            const downloadFilename = `merged-file.pdf`
+
+            res.download(
+                mergedFile.name,
+                downloadFilename,
+                (err: any) => {
+                    if (err) {
+                        console.log(`❌ Error: ${err}`)
+                    } else {
+                    }
+                    res.end()
+                    cleanupOutputFile() // <-- something is preventing deletion
+                    cleanupMergedFile()
+                }
+            )
+        } catch (error) {
+            console.log(`❌ error: ${json(error)}`)
+        }
     }
 )
 
