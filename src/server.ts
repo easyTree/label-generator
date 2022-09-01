@@ -32,7 +32,7 @@ const corsInstance = cors({
 app.options('*', corsInstance)
 app.use(corsInstance)
 app.use(responseTime())
-app.use(express.json())
+app.use(express.json({ limit: '1MB' }))
 
 app.get('/info', (_req, res) => {
     try {
