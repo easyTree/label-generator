@@ -125,6 +125,83 @@ app.post(
 )
 
 app.post(
+    '/echo-pdf',
+    async (
+        {
+            body: { pdf }
+        }: TypedRequestBody<OverlayPdfOntoLabelsRequest>,
+        res
+    ) => {
+        try {
+            const outputFile = tmp.fileSync({ postfix: '.pdf' })
+            const outputFilePath = outputFile.name
+
+            const base = path.resolve('./files/merge')
+            const inputFolder = path.join(base, 'input1')
+            const templatePath = path.resolve(
+                inputFolder,
+                'label-template.pdf'
+            )
+            const buff = Buffer.from(pdf, 'base64')
+
+            writeFileSync(outputFilePath, buff)
+            console.log(
+                `🍕 wrote base64-decoded pdf to outputFile: '${outputFilePath}'`
+            )
+
+            res.download(
+                outputFile.name,
+                'echoedfile.pdf',
+                (err: any) => {
+                    if (err) {
+                        console.log(`❌ Error: ${err}`)
+                    } else {
+                    }
+                    res.end()
+                    deleteTmpFile(outputFile) // <-- something is preventing deletion
+                    // cleanupMergedFile()
+                }
+            )
+
+            // const mergedFile = await mergeFiles({
+            //     baseFile: templatePath,
+            //     overlayFile: outputFilePath
+            // })
+            // const cleanupMergedFile = () => {
+            //     console.log(
+            //         '*********** /overlay-pdf-onto-labels - cleanup mergedFile!'
+            //     )
+            //     deleteTmpFile(mergedFile)
+            // }
+            // const cleanupOutputFile = () => {
+            //     console.log(
+            //         '*********** /overlay-pdf-onto-labels - cleanup outputFile!'
+            //     )
+            //     deleteTmpFile(outputFile)
+            // }
+            // const downloadFilename = `merged-file.pdf`
+
+            // res.download(
+            //     mergedFile.name,
+            //     downloadFilename,
+            //     (err: any) => {
+            //         if (err) {
+            //             console.log(`❌ Error: ${err}`)
+            //         } else {
+            //         }
+            //         res.end()
+            //         cleanupOutputFile() // <-- something is preventing deletion
+            //         cleanupMergedFile()
+            //     }
+            // )
+        } catch (error) {
+            console.log(`❌ error: ${json(error)}`)
+            res.status(400).send({ message: 'A problem occurred.' })
+        }
+    }
+)
+
+app.post(
     '/generate-labels',
     async (
         req: TypedRequestBody<GenerateKitchenLabelsRequest>,
