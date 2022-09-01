@@ -1,0 +1,8 @@
+FROM node:16.17.0-alpine3.15
+
+RUN apk add mc
+
+# WORKDIR /app/
+
+# COPY package.json ./package.json
+# COPY package-lock.json ./
